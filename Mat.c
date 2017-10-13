@@ -167,7 +167,7 @@ int interpolateM2(int i, int i1, int j1, double m)
 	return (i - i1) * m + j1;
 }
 
-void getFinalPoint(Mat mat, int i1, int j1, int *i2, int *j2, double value, double m)
+void getFinalPoint(Mat mat, int i1, int j1, int *i2, int *j2, double m)
 {
 	*i2 = i1;
 	*j2 = interpolateM(*i2, i1, j1, m);
@@ -237,6 +237,35 @@ void pgmToFile(Mat image, char *filename)
 	fclose(file);
 }
 
-double slope(Point p1, Point p2){
-	return (p2.j - p1.j)/(float)(p2.i - p1.i);
+double slope(Point p1, Point p2)
+{
+	return (p2.j - p1.j) / (float)(p2.i - p1.i);
+}
+
+void fixPoint(Mat mat, Point *point)
+{
+	if (point->i < 0)
+	{
+		point->i = 0;
+	}
+	if (point->j < 0)
+	{
+		point->j = 0;
+	}
+	if (point->i >= mat.rows)
+	{
+		point->i = mat.rows - 1;
+	}
+	if (point->j >= mat.cols)
+	{
+		point->j = mat.cols - 1;
+	}
+}
+
+int validatePoint(Mat mat, Point point)
+{
+	if (point.i < 0 || point.j < 0 || point.i >= mat.rows || point.j >= mat.cols)
+		return 0;
+	else
+		return 1;
 }

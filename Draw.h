@@ -1,8 +1,9 @@
 #ifndef DRAW_H
 #define DRAW_H
 
-#include <math.h>
+#define _USE_MATH_DEFINES
 
+#include <math.h>
 #include "Mat.h"
 
 void BresenhamsLine(Mat mat, double value, Point p1, Point p2);

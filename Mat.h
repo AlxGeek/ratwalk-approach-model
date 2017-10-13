@@ -45,10 +45,13 @@ int interpolateP(int i, Point p1, Point p2);
 
 int interpolateM(int i, int i1, int j1, double m);
 
-//void getFinalPoint(int i1, int j1, int &i2, int &j2, double value, double angle);
-
-void getFinalPoint(Mat mat, int i1, int j1, int *i2, int *j2, double value, double angle);
+void getFinalPoint(Mat mat, int i1, int j1, int *i2, int *j2, double m);
 
 double slope(Point p1, Point p2);
+
+void fixPoint(Mat mat, Point *point);
+
+int validatePoint(Mat mat, Point point);
+
 
 #endif //MAT_H

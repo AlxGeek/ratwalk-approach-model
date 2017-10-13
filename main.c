@@ -15,8 +15,11 @@ int main(int argc, char *argv[])
 	srand(time(NULL));
 	Mat pgm = openPGM("image.pgm");
 	Mat trimImg = getTrimmedImage(pgm);
-	Mat cpy = copyMat(trimImg);
-	Mat imgTest = copyMat(trimImg);
+	Mat optimizeImage = copyMat(trimImg);
+	Mat solutionImage = copyMat(trimImg);
+	Mat seedImage = copyMat(trimImg);
+	Mat conectedImage = copyMat(trimImg);
+	
 
 	Individual seed[4];
 	Individual solution[4];
@@ -24,31 +27,60 @@ int main(int argc, char *argv[])
 		seed[i].width = 10;
 
 	seed[0].p1.i = 0;
-	for (seed[0].p1.j = 0; imgTest.data[seed[0].p1.i][seed[0].p1.j] == 0; seed[0].p1.j++);
+	for (seed[0].p1.j = 0; optimizeImage.data[seed[0].p1.i][seed[0].p1.j] == 0; seed[0].p1.j++)
+		;
 
-	getFinalPoint(imgTest, seed[0].p1.i, seed[0].p1.j, &seed[0].p2.i, &seed[0].p2.j, 255 / 2, tan(-45 * M_PI / 180));
+	getFinalPoint(optimizeImage, seed[0].p1.i, seed[0].p1.j, &seed[0].p2.i, &seed[0].p2.j, tan(-45 * M_PI / 180));
 
-	solution[0] = optimize(imgTest, seed[0]);
+	solution[0] = optimize(optimizeImage, seed[0]);
 
-	drawRect(imgTest, 0, solution[0].p1, solution[0].p2, solution[0].width);
-	
-	pgmToFile(imgTest, "test.pgm");
+	drawRect(optimizeImage, 0, solution[0].p1, solution[0].p2, solution[0].width);
+	pgmToFile(optimizeImage, "optimizeImage.pgm");
 
 	seed[1].p1 = solution[0].p2;
+	seed[1].p1.i -= 10;
 
-	getFinalPoint(trimImg, seed[1].p1.i, seed[1].p1.j, &seed[1].p2.i, &seed[1].p2.j, 255 / 2, tan(45 * M_PI / 180));
-	
-	solution[1] = optimize(imgTest, seed[1]);
-	
-	
+	getFinalPoint(solutionImage, seed[1].p1.i, seed[1].p1.j, &seed[1].p2.i, &seed[1].p2.j, tan(45 * M_PI / 180));
 
+	solution[1] = optimize(optimizeImage, seed[1]);
 
-	for(int i = 0; i<2;i++){
-		drawRect(trimImg, 255 / 2, solution[i].p1, solution[i].p2, solution[i].width);
-		drawRect(cpy, 255 / 2, seed[i].p1, seed[i].p2, seed[i].width);
+	drawRect(optimizeImage, 0, solution[1].p1, solution[1].p2, solution[1].width);
+	pgmToFile(optimizeImage, "optimizeImage.pgm");
+
+	seed[2].p1 = solution[1].p2;
+	seed[2].p1.i -= 10;
+
+	getFinalPoint(solutionImage, seed[2].p1.i, seed[2].p1.j, &seed[2].p2.i, &seed[2].p2.j, tan(-45 * M_PI / 180));
+
+	solution[2] = optimize(optimizeImage, seed[2]);
+
+	drawRect(optimizeImage, 0, solution[2].p1, solution[2].p2, solution[2].width);
+	pgmToFile(optimizeImage, "optimizeImage.pgm");
+
+	seed[3].p1 = solution[2].p2;
+
+	getFinalPoint(solutionImage, seed[3].p1.i, seed[3].p1.j, &seed[3].p2.i, &seed[3].p2.j, tan(45 * M_PI / 180));
+
+	solution[3] = optimize(optimizeImage, seed[3]);
+
+	pgmToFile(optimizeImage, "optimizeImage.pgm");
+
+	for (int i = 0; i < 4; i++)
+	{
+		printf("Seed %d\n", i);
+		printIndividual(seed[i]);
+		printf("Solution %d\n", i);
+		printIndividual(solution[i]);
+		drawRect(seedImage, 255 / 2, seed[i].p1, seed[i].p2, seed[i].width);
+		drawRect(solutionImage, 255 / 2, solution[i].p1, solution[i].p2, solution[i].width);
+		if (i != 3)
+			solution[i].p2 = solution[i + 1].p1;
+			drawRect(conectedImage, 255 / 2, solution[i].p1, solution[i].p2, solution[i].width);
 	}
-	
-	pgmToFile(trimImg, "nuevaElite.pgm");
-	pgmToFile(cpy, "initial.pgm");
+
+	pgmToFile(solutionImage, "solution.pgm");
+	pgmToFile(seedImage, "seed.pgm");
+	pgmToFile(conectedImage, "conected.pgm");
+
 	return 0;
 }

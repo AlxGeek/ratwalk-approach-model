@@ -2,42 +2,54 @@
 
 void objetiveFunction(Mat mat, Individual *individual)
 {
-    double angle;
+
     Point pp1, pp2, p3, p4;
     individual->fitness = 0;
-    pp1 = individual->p1;
-    pp2 = individual->p2;
-    angle = atan2(individual->p2.j - individual->p1.j, individual->p2.i - individual->p1.i) + 1.5708;
-    p3 = transformPoint(individual->p1, individual->width, angle);
-    //angle = atan2(individual->p1.j - individual->p2.j, individual->p1.i - individual->p2.i) + 1.5708;
-    p4 = transformPoint(individual->p2, individual->width, angle);
-
-    if (p3.i < 0 || p3.j < 0 || p4.i < 0 || p4.j < 0)
+    if (equalsPoints(individual->p1, individual->p2))
     {
-        printf("Hola\n");
         return;
     }
 
-    int steps, steps1,steps2;
-    float Iincrement1, Jincrement1,  Iincrement2, Jincrement2;
-    getDDAdata(individual->p1, p3, &Iincrement1, &Jincrement1, &steps1);
-    printf("s1 = %d ",steps1);
-    getDDAdata(individual->p2, p4, &Iincrement2, &Jincrement2, &steps2);
-    printf("s2 = %d\n",steps2);
+    p3 = transformPoint2(individual->p2, individual->p1, individual->width, -M_PI_2);
+    p4 = transformPoint2(individual->p1, individual->p2, individual->width, M_PI_2);
+
+    if (validatePoint(mat, p3) == 0 || validatePoint(mat, p4) == 0)
+    {
+        return;
+    }
+
+    int steps, steps1, steps2;
+    float Iincrement1, Jincrement1, Iincrement2, Jincrement2;
+    getDDAdata(individual->p1, p4, &Iincrement1, &Jincrement1, &steps1);
+    getDDAdata(individual->p2, p3, &Iincrement2, &Jincrement2, &steps2);
+
+    // if (steps1 != steps2)
+    // {
+    //     printf("s1 = %d ", steps1);
+    //     printf("s2 = %d\n", steps2);
+    // }
     steps = fmin(steps1, steps2);
 
-    pp1 = individual->p1;
-    pp2 = individual->p2;
+    float i1, i2, j1, j2;
+    i1 = individual->p1.i;
+    i2 = individual->p2.i;
+    j1 = individual->p1.j;
+    j2 = individual->p2.j;
 
     for (int v = 0; v <= steps; v++)
     {
-        individual->fitness += DDAlinealObjetiveFunction(mat, pp1, pp2);    
-        pp1.i += Iincrement1;
-        pp1.j += Jincrement1;
-        pp2.i += Iincrement2;
-        pp2.j += Jincrement2;
+        pp1.i = round(i1);
+        pp1.j = round(j1);
+        pp2.i = round(i2);
+        pp2.j = round(j2);
+        individual->fitness += DDAlinealObjetiveFunction(mat, pp1, pp2);
+        i1 += Iincrement1;
+        j1 += Jincrement1;
+        i2 += Iincrement2;
+        j2 += Jincrement2;
     }
 
+    individual->fitness += getDistance(individual->p1, individual->p2)*7;
 }
 
 double DDAlinealObjetiveFunction(Mat mat, Point p1, Point p2)
@@ -59,7 +71,7 @@ double DDAlinealObjetiveFunction(Mat mat, Point p1, Point p2)
         }
         else
         {
-            fitness--;
+            fitness -= 10;
         }
     }
     return fitness;
@@ -78,11 +90,12 @@ void printIndividual(Individual individual)
 Individual initIndividual(Individual seed)
 {
     Individual individual;
-    individual.p1.i = seed.p1.i + fmax(0, rand() % 50);
-    individual.p1.j = seed.p1.j + fmax(0, -25 + rand() % 50);
-    individual.p2.i = seed.p2.i + fmax(0, -25 + rand() % 50);
-    individual.p2.j = seed.p2.j + fmax(0, -25 + rand() % 50);
-    individual.width = seed.width + fmax(0, -25 + rand() % 50);
+    individual.p1.i = seed.p1.i - 25 + rand() % 50;
+    individual.p1.j = seed.p1.j - 25 + rand() % 50;
+    individual.p2.i = seed.p2.i + individual.p1.i - 25 + rand() % 50;
+    individual.p2.j = seed.p2.j + individual.p1.j - 25 + rand() % 50;
+    individual.width = fmax(1, seed.width - 25 + rand() % 50);
+
     return individual;
 }
 
@@ -96,19 +109,17 @@ Individual *initPopulation(Individual seed, int n)
     return population;
 }
 
-void fixIndividual(Individual *individual)
+void fixIndividual(Individual *individual, Mat mat)
 {
-    if (individual->p1.i > individual->p2.i)
-    {
-        swapPoint(&individual->p1, &individual->p2);
-    }
+    fixPoint(mat, &individual->p1);
+    fixPoint(mat, &individual->p2);
 }
 
-void fixPopulation(Individual *population, int n)
+void fixPopulation(Individual *population, int n, Mat mat)
 {
     for (int i = 0; i < n; i++)
     {
-        fixIndividual(&population[i]);
+        fixIndividual(&population[i], mat);
     }
 }
 
@@ -194,19 +205,19 @@ void mutation(Individual *population, int n)
             switch (rand() % 5)
             {
             case 0:
-                population[i].p1.i = fmax(0, rand() % 50);
+                population[i].p1.i = population[i].p1.i - 25 + rand() % 50;
                 break;
             case 1:
-                population[i].p1.j = fmax(0, -25 + rand() % 50);
+                population[i].p1.j = population[i].p1.j - 25 + rand() % 50;
                 break;
             case 2:
-                population[i].p2.i = fmax(0, rand() % 50);
+                population[i].p2.i = population[i].p2.i - 25 + rand() % 50;
                 break;
             case 3:
-                population[i].p2.j = fmax(0, -25 + rand() % 50);
+                population[i].p2.j = population[i].p2.j - 25 + rand() % 50;
                 break;
             case 4:
-                population[i].width = fmax(1, -25 + rand() % 50);
+                population[i].width = fmax(1, population[i].width - 25 + rand() % 50);
                 break;
             }
         }
@@ -217,25 +228,28 @@ Individual optimize(Mat mat, Individual seed)
 {
     srand(time(NULL));
     Individual elite;
-    int populationSize = 50;
+    int populationSize = 100;
     Individual *populationAux = (Individual *)malloc(sizeof(Individual) * populationSize);
     Individual *population = initPopulation(seed, populationSize);
+
+    printf("Seed O\n");
+    printIndividual(seed);
 
     int ite = 0;
     int conv = 0;
     double lfitness = 0;
     do
     {
-        //fixPopulation(population, populationSize);
+        fixPopulation(population, populationSize, mat);
         setFitness(mat, population, populationSize);
         elite = getElite(population, populationSize);
         binaryTournamet(population, populationSize, populationAux);
-        population[0] = elite;
         crossover(population, populationSize);
         mutation(population, populationSize);
-        printIndividual(elite);
+        population[0] = elite;
+        //printIndividual(elite);
         printf("ite = %d\n", ite++);
-        if (fabs(elite.fitness - lfitness) < 0.00000001)
+        if (fabs(elite.fitness - lfitness) < 0.000000001)
         {
             conv++;
         }
@@ -244,6 +258,10 @@ Individual optimize(Mat mat, Individual seed)
             conv = 0;
         }
         lfitness = elite.fitness;
-    } while (elite.fitness < 10000 && ite < 10000 && conv < 200);
+    } while (elite.fitness < 1000000 && ite < 10000 && conv < 600);
+
+    free(populationAux);
+    free(population);
+
     return elite;
 }

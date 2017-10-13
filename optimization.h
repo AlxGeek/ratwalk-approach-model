@@ -5,11 +5,11 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "Mat.h"
 #include "Draw.h"
+#include "Mat.h"
 
 #define crossoverProbability 50
-#define mutationProbability 30
+#define mutationProbability 40
 
 typedef struct Individual Individual;
 
@@ -21,9 +21,9 @@ struct Individual
     double fitness;
 };
 
-void fixIndividual(Individual* individual);
+void fixIndividual(Individual *individual, Mat mat);
 
-void fixPopulation(Individual *population, int n);
+void fixPopulation(Individual *population, int n, Mat mat);
 
 void objetiveFunction(Mat mat, Individual *individual);
 
