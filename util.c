@@ -43,3 +43,11 @@ int compare(const void *a, const void *b)
 {
 	return (*(double *)b * 1000 - *(double *)a * 1000);
 }
+
+char *concatStrings(char *str1, char *str2)
+{
+	char *filename[FILENAME_LENGTH];
+	filename[0] = '\0';
+	strcat(filename, str1);
+	return strcat(filename, str2);
+}

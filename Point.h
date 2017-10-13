@@ -33,4 +33,10 @@ double getDistance(Point p1, Point p2);
 
 int equalsPoints(Point p1, Point p2);
 
+double getAngleTwoLines(Point p1, Point p2, Point p3, Point p4);
+
+double getAngle(Point p1, Point p2);
+
+double radianToDegree(double radian);
+
 #endif //POINT_H

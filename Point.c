@@ -22,9 +22,6 @@ void swapPoint(Point *p1, Point *p2)
 Point transformPoint(Point p, int width, double angle)
 {
     Point pr;
-    // pr.i = p.i + cos(angle) * width;
-    // pr.j = p.j + sin(angle) * width;
-
     pr.i = p.i + cos(angle) * width;
     pr.j = p.j + sin(angle) * width;
     return pr;
@@ -56,4 +53,20 @@ double getDistance(Point p1, Point p2)
 
 int equalsPoints(Point p1, Point p2){
     return p1.i == p2.i && p1.j == p2.j ? 1 : 0;
+}
+
+double getAngleTwoLines(Point p1, Point p2, Point p3, Point p4)
+{
+    double angle1 = atan2(p2.j - p1.j, p2.i - p1.i);
+    double angle2 = atan2(p4.j - p3.j, p4.i - p3.i);
+    return angle1-angle2;
+}
+
+
+double getAngle(Point p1, Point p2){
+    return atan2(p2.j - p1.j, p2.i - p1.i);
+}
+
+double radianToDegree(double radian){
+    return radian * 180 / M_PI;
 }

@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include "configuration.h"
 #include "Draw.h"
 #include "Mat.h"
 
@@ -50,5 +51,9 @@ void crossover(Individual *population, int n);
 void mutation(Individual *population, int n);
 
 Individual optimize(Mat mat, Individual seed);
+
+void dataToFile(char* filename, Individual *individual);
+
+void optimizeStructure(char* image);
 
 #endif //OPTIMIZATION_H
