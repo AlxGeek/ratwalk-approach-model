@@ -6,6 +6,7 @@
 #include <time.h>
 
 #include "configuration.h"
+#include "util.h"
 #include "Draw.h"
 #include "Mat.h"
 

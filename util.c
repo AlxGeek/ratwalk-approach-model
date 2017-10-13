@@ -44,10 +44,9 @@ int compare(const void *a, const void *b)
 	return (*(double *)b * 1000 - *(double *)a * 1000);
 }
 
-char *concatStrings(char *str1, char *str2)
+void createFilename(char *filename, char *str1, char *str2)
 {
-	char *filename[FILENAME_LENGTH];
-	filename[0] = '\0';
+	strcpy(filename, "");
 	strcat(filename, str1);
-	return strcat(filename, str2);
+	strcat(filename, str2);
 }

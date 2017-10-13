@@ -1,6 +1,7 @@
 #include "Point.h"
 
-Point getPoint(int i, int j){
+Point getPoint(int i, int j)
+{
     Point p;
     p.i = i;
     p.j = j;
@@ -51,7 +52,8 @@ double getDistance(Point p1, Point p2)
     return sqrt(pow(p2.i - p1.i, 2) + pow(p2.j - p1.j, 2));
 }
 
-int equalsPoints(Point p1, Point p2){
+int equalsPoints(Point p1, Point p2)
+{
     return p1.i == p2.i && p1.j == p2.j ? 1 : 0;
 }
 
@@ -59,14 +61,31 @@ double getAngleTwoLines(Point p1, Point p2, Point p3, Point p4)
 {
     double angle1 = atan2(p2.j - p1.j, p2.i - p1.i);
     double angle2 = atan2(p4.j - p3.j, p4.i - p3.i);
-    return angle1-angle2;
+    return angle1 - angle2;
 }
 
-
-double getAngle(Point p1, Point p2){
+double getAngle(Point p1, Point p2)
+{
     return atan2(p2.j - p1.j, p2.i - p1.i);
 }
 
-double radianToDegree(double radian){
+double radianToDegree(double radian)
+{
     return radian * 180 / M_PI;
+}
+
+Point closestPoint(Point p, Point p1, Point p2)
+{
+    if (getDistance(p, p1) < getDistance(p, p2))
+        return p1;
+    else
+        return p2;
+}
+
+Point greatPointI(Point p1, Point p2)
+{
+    if (p1.i > p2.i)
+        return p1;
+    else
+        return p2;
 }

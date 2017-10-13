@@ -39,4 +39,8 @@ double getAngle(Point p1, Point p2);
 
 double radianToDegree(double radian);
 
+Point closestPoint(Point p, Point p1, Point p2);
+
+Point greatPointI(Point p1, Point p2);
+
 #endif //POINT_H

@@ -7,6 +7,7 @@ void objetiveFunction(Mat mat, Individual *individual)
     individual->fitness = 0;
     if (equalsPoints(individual->p1, individual->p2))
     {
+        individual->fitness = -1;
         return;
     }
 
@@ -15,6 +16,7 @@ void objetiveFunction(Mat mat, Individual *individual)
 
     if (validatePoint(mat, p3) == 0 || validatePoint(mat, p4) == 0)
     {
+        individual->fitness = -1;
         return;
     }
 
@@ -49,7 +51,7 @@ void objetiveFunction(Mat mat, Individual *individual)
         j2 += Jincrement2;
     }
 
-    individual->fitness += getDistance(individual->p1, individual->p2) * 7;
+    individual->fitness += getDistance(individual->p1, individual->p2) * 8;
 }
 
 double DDAlinealObjetiveFunction(Mat mat, Point p1, Point p2)
@@ -71,7 +73,7 @@ double DDAlinealObjetiveFunction(Mat mat, Point p1, Point p2)
         }
         else
         {
-            fitness -= 10;
+            fitness -= 30;
         }
     }
     return fitness;
@@ -92,8 +94,10 @@ Individual initIndividual(Individual seed)
     Individual individual;
     individual.p1.i = seed.p1.i - 25 + rand() % 50;
     individual.p1.j = seed.p1.j - 25 + rand() % 50;
-    individual.p2.i = seed.p2.i + individual.p1.i - 25 + rand() % 50;
-    individual.p2.j = seed.p2.j + individual.p1.j - 25 + rand() % 50;
+    // individual.p2.i = seed.p2.i + individual.p1.i - 25 + rand() % 50;
+    // individual.p2.j = seed.p2.j + individual.p1.j - 25 + rand() % 50;
+    individual.p2.i = seed.p2.i - 25 + rand() % 50;
+    individual.p2.j = seed.p2.j - 25 + rand() % 50;
     individual.width = fmax(1, seed.width - 25 + rand() % 50);
 
     return individual;
@@ -113,6 +117,19 @@ void fixIndividual(Individual *individual, Mat mat)
 {
     fixPoint(mat, &individual->p1);
     fixPoint(mat, &individual->p2);
+    
+    Point p3 = transformPoint2(individual->p2, individual->p1, individual->width, -M_PI_2);
+    while(validatePoint(mat, p3) == 0 && individual->width > 1){
+        individual->width--;
+        p3 = transformPoint2(individual->p2, individual->p1, individual->width, -M_PI_2);
+    }
+
+    Point p4 = transformPoint2(individual->p1, individual->p2, individual->width, M_PI_2);
+    while(validatePoint(mat, p4) == 0 && individual->width > 1){
+        individual->width--;
+        p4 = transformPoint2(individual->p1, individual->p2, individual->width, M_PI_2);
+    }
+    
 }
 
 void fixPopulation(Individual *population, int n, Mat mat)
@@ -232,9 +249,6 @@ Individual optimize(Mat mat, Individual seed)
     Individual *populationAux = (Individual *)malloc(sizeof(Individual) * populationSize);
     Individual *population = initPopulation(seed, populationSize);
 
-    printf("Seed O\n");
-    printIndividual(seed);
-
     int ite = 0;
     int conv = 0;
     double lfitness = 0;
@@ -248,7 +262,7 @@ Individual optimize(Mat mat, Individual seed)
         mutation(population, populationSize);
         population[0] = elite;
         //printIndividual(elite);
-        printf("ite = %d\n", ite++);
+        //printf("ite = %d\n", ite++);
         if (fabs(elite.fitness - lfitness) < 0.000000001)
         {
             conv++;
@@ -288,12 +302,15 @@ void dataToFile(char *filename, Individual *individual)
 
 void optimizeStructure(char *image)
 {
-    Mat pgm = openPGM(concatStrings(IN_IMAGES_FOLDER, image));
+    char filename[FILENAME_LENGTH];
+    createFilename(filename, IN_IMAGES_FOLDER, image);
+    Mat pgm = openPGM(filename);
     Mat optimizeImage = getTrimmedImage(pgm);
-    pgmToFile(optimizeImage, concatStrings(CROPPED_IMAGE_FOLDER, image));
     Mat solutionImage = copyMat(optimizeImage);
     Mat seedImage = copyMat(optimizeImage);
     Mat conectedImage = copyMat(optimizeImage);
+    createFilename(filename, CROPPED_IMAGE_FOLDER, image);
+    pgmToFile(optimizeImage, filename);
 
     Individual seed[4];
     Individual solution[4];
@@ -312,6 +329,7 @@ void optimizeStructure(char *image)
     drawRect(optimizeImage, 0, solution[0].p1, solution[0].p2, solution[0].width);
 
     seed[1].p1 = solution[0].p2;
+    seed[1].p1 = greatPointI(solution[0].p1, solution[0].p2);
     seed[1].p1.i -= 10;
 
     getFinalPoint(solutionImage, seed[1].p1.i, seed[1].p1.j, &seed[1].p2.i, &seed[1].p2.j, tan(45 * M_PI / 180));
@@ -319,9 +337,8 @@ void optimizeStructure(char *image)
     solution[1] = optimize(optimizeImage, seed[1]);
 
     drawRect(optimizeImage, 0, solution[1].p1, solution[1].p2, solution[1].width);
-
-    seed[2].p1 = solution[1].p2;
-    seed[2].p1.i += 10;
+    
+    seed[2].p1 = greatPointI(solution[1].p1, solution[1].p2);
 
     getFinalPoint(solutionImage, seed[2].p1.i, seed[2].p1.j, &seed[2].p2.i, &seed[2].p2.j, tan(-45 * M_PI / 180));
 
@@ -329,33 +346,36 @@ void optimizeStructure(char *image)
 
     drawRect(optimizeImage, 0, solution[2].p1, solution[2].p2, solution[2].width);
 
-    seed[3].p1 = solution[2].p2;
+    seed[3].p1 = greatPointI(solution[2].p1, solution[2].p2);
 
     getFinalPoint(solutionImage, seed[3].p1.i, seed[3].p1.j, &seed[3].p2.i, &seed[3].p2.j, tan(45 * M_PI / 180));
 
     solution[3] = optimize(optimizeImage, seed[3]);
 
-    for (int i = 0; i < 4; i++)
+    int color = 50;
+    for (int i = 0; i < 4; i++, color += 50)
     {
-        printf("Seed %d\n", i);
-        printIndividual(seed[i]);
-        printf("Solution %d\n", i);
-        printIndividual(solution[i]);
-        drawRect(seedImage, 255 / 2, seed[i].p1, seed[i].p2, seed[i].width);
-        drawRect(solutionImage, 255 / 2, solution[i].p1, solution[i].p2, solution[i].width);
+        // printf("Seed %d\n", i);
+        // printIndividual(seed[i]);
+        // printf("Solution %d\n", i);
+        // printIndividual(solution[i]);
+        drawRect(seedImage, color, seed[i].p1, seed[i].p2, seed[i].width);
+        drawRect(solutionImage, color, solution[i].p1, solution[i].p2, solution[i].width);
         if (i != 3)
-            solution[i].p2 = solution[i + 1].p1;
-        drawRect(conectedImage, 255 / 2, solution[i].p1, solution[i].p2, solution[i].width);
+        {
+            solution[i].p2 = closestPoint(solution[i].p2, solution[i + 1].p1, solution[i + 1].p2);
+        }
+        drawRect(conectedImage, color, solution[i].p1, solution[i].p2, solution[i].width);
     }
 
-    
-    
-    pgmToFile(solutionImage, concatStrings(SOLUTION_IMAGE_FOLDER, image));
-    pgmToFile(seedImage, concatStrings(SEED_IMAGE_FOLDER, image));
-    pgmToFile(conectedImage, concatStrings(FINAL_SOLUTION_IMAGE_FOLDER, image));
-
-    char *dataFilename =  concatStrings(DATA_FOLDER, image);
-    dataToFile(strcat(dataFilename, ".csv"), solution);
+    createFilename(filename, SOLUTION_IMAGE_FOLDER, image);
+    pgmToFile(solutionImage, filename);
+    createFilename(filename, SEED_IMAGE_FOLDER, image);
+    pgmToFile(seedImage, filename);
+    createFilename(filename, FINAL_SOLUTION_IMAGE_FOLDER, image);
+    pgmToFile(conectedImage, filename);
+    createFilename(filename, DATA_FOLDER, image);
+    dataToFile(strcat(filename, ".csv"), solution);
 
     freeMat(pgm);
     freeMat(optimizeImage);
