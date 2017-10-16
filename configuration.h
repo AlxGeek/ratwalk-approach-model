@@ -17,4 +17,13 @@
 
 #define FILENAME_LENGTH 40
 
+#define POBLATION_SIZE 100
+
+#define MIN_WIDTH 4
+
+#define crossoverProbability 50
+
+#define mutationProbability 30
+
+
 #endif //CONFIGURATION_H

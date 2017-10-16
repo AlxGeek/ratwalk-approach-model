@@ -10,9 +10,6 @@
 #include "Draw.h"
 #include "Mat.h"
 
-#define crossoverProbability 50
-#define mutationProbability 40
-
 typedef struct Individual Individual;
 
 struct Individual
@@ -51,10 +48,10 @@ void crossover(Individual *population, int n);
 
 void mutation(Individual *population, int n);
 
-Individual optimize(Mat mat, Individual seed);
+Individual optimize(Mat mat, Individual seed, char *filename);
 
-void dataToFile(char* filename, Individual *individual);
+void dataToFile(char *filename, Individual *individual);
 
-void optimizeStructure(char* image);
+void optimizeStructure(char *image);
 
 #endif //OPTIMIZATION_H

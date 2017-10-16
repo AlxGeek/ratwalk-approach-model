@@ -159,7 +159,7 @@ int interpolateP(int i, Point p1, Point p2)
 
 int interpolateM(int i, int i1, int j1, double m)
 {
-	return (i - i1) * m + j1;
+	return round((i - i1) * m) + j1;
 }
 
 int interpolateM2(int i, int i1, int j1, double m)

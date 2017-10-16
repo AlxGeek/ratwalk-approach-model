@@ -74,6 +74,10 @@ double radianToDegree(double radian)
     return radian * 180 / M_PI;
 }
 
+double degreeToRadian(double degree){
+    return degree *  M_PI / 180;
+}
+
 Point closestPoint(Point p, Point p1, Point p2)
 {
     if (getDistance(p, p1) < getDistance(p, p2))
@@ -82,9 +86,34 @@ Point closestPoint(Point p, Point p1, Point p2)
         return p2;
 }
 
+Point farestPoint(Point p, Point p1, Point p2)
+{
+    if (getDistance(p, p1) > getDistance(p, p2))
+        return p1;
+    else
+        return p2;
+}
+
 Point greatPointI(Point p1, Point p2)
 {
     if (p1.i > p2.i)
+        return p1;
+    else
+        return p2;
+}
+
+
+Point greatPointJ(Point p1, Point p2)
+{
+    if (p1.j > p2.j)
+        return p1;
+    else
+        return p2;
+}
+
+Point lessPointJ(Point p1, Point p2)
+{
+    if (p1.j < p2.j)
         return p1;
     else
         return p2;
